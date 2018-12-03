@@ -38,6 +38,7 @@ def test_fp(host, port1, port2):
             res = None
         fingerprint[test] = res
         fingerprint["number"] = src.sport - 5000
+        fingerprint['host'] = host
     return fingerprint
 
 
