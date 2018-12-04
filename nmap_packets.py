@@ -5,7 +5,7 @@ from scapy.all import *
 from scapy.modules.nmap import *
 
 
-#Packets for nmap os tests
+# Packets for nmap os tests
 
 
 def get_random_test(target, port1, port2):
@@ -41,7 +41,4 @@ def test_fp(host, port1, port2):
         fingerprint['host'] = host
     return fingerprint
 
-
-def send_fp(host, fp):
-    #logic to send fp to server
 
