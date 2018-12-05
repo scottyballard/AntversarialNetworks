@@ -29,13 +29,22 @@ def ant_signal_parser(message):
     message = message.replace('<', '')
     message = message.replace('>', '')
     message = message.replace('|', '')
+    message = message.replace('(', '')
+    message = message.replace(')', '')
     message = message.replace('IP  version', 'IP_Version')
+    message = message.replace('IP  frag', 'IP_Frag')
     message = message.replace('TCP  sport', 'TCP_Sport')
+    message = message.replace('UDP  sport', 'UDP_Sport')
+    message = message.replace('UDPerror  sport', 'UDPerror_Sport')
+    message = message.replace('Raw  load=', '\'Raw_Load\' : ')
+    message = message.replace('ICMP  type', 'ICMP_Type')
+    message = message.replace('IPerror  version', 'IPerror_Version')
     message = message.replace('Padding  load=', '\'Padding_Load\' : ')
     messageList = message.split()
     i = 0
+    #if 'IPerror_Version' not in message:
     while i < (len(messageList) - 1):
-        if '=' in messageList[i] and 'Padding_Load' not in messageList[i]:
+        if '=' in messageList[i] and 'Padding_Load' not in messageList[i] and 'Raw_Load' not in messageList[i]:
             messageList[i] = messageList[i].replace('=', "\' : \'")
             messageList[i] = "\'" + messageList[i] + "\', "
         i += 1
@@ -43,7 +52,7 @@ def ant_signal_parser(message):
 
 
 async def handle_ants(reader, writer):
-    data = await reader.read(2048)
+    data = await reader.read(8192)
     message = data.decode()
 
     addr = writer.get_extra_info('peername')
