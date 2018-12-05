@@ -3,6 +3,7 @@
 import asyncio
 
 from nmap_server import *
+import ast
 
 PORT = 25252
 
@@ -22,9 +23,27 @@ async def signal_ants(ant_list, host, guess):
         writer.close()
         await writer.wait_closed()
 
+def ant_signal_parser(message):
+    message = message.replace('<', '{ ', 1)
+    message = message.replace('>', '} ', 1)
+    message = message.replace('<', '')
+    message = message.replace('>', '')
+    message = message.replace('|', '')
+    message = message.replace('IP  version', 'IP_Version')
+    message = message.replace('TCP  sport', 'TCP_Sport')
+    message = message.replace('Padding  load=', '\'Padding_Load\' : ')
+    messageList = message.split()
+    i = 0
+    while i < (len(messageList) - 1):
+        if '=' in messageList[i] and 'Padding_Load' not in messageList[i]:
+            messageList[i] = messageList[i].replace('=', "\' : \'")
+            messageList[i] = "\'" + messageList[i] + "\', "
+        i += 1
+    return messageList
+
 
 async def handle_ants(reader, writer):
-    data = await reader.read(100)
+    data = await reader.read(2048)
     message = data.decode()
 
     addr = writer.get_extra_info('peername')
@@ -32,7 +51,9 @@ async def handle_ants(reader, writer):
     if message == '__EXIT__':
         loop.stop()
         print('Server Closed: Exit Message Received')
-    fp = dict(message)
+    messageList = ant_signal_parser(message)
+    dictTranslate = ''.join(messageList)
+    fp = ast.literal_eval(dictTranslate)
     host = fp['host']
     del fp['host']
     if host not in hosts:
@@ -43,7 +64,7 @@ async def handle_ants(reader, writer):
     writer.close()
 
 loop = asyncio.get_event_loop()
-coro = asyncio.start_server(handle_ants, '127.0.0.1', PORT, loop=loop)
+coro = asyncio.start_server(handle_ants, '192.168.58.129', PORT, loop=loop)
 server = loop.run_until_complete(coro)
 
 # Serve requests until Ctrl+C is pressed
