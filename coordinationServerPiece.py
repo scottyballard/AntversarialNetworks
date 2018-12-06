@@ -25,7 +25,7 @@ async def signal_ants(ant_list, host, guess):
         writer.close()
         await writer.wait_closed()
 
-def ant_signal_parser(message):
+'''def ant_signal_parser(message):
     message = message.replace('<', '{ ', 1)
     message = message.replace('>', '} ', 1)
     message = message.replace('<', '')
@@ -51,7 +51,7 @@ def ant_signal_parser(message):
             messageList[i] = "\'" + messageList[i] + "\', "
         i += 1
     return messageList
-
+'''
 
 async def handle_ants(reader, writer):
 
@@ -80,11 +80,6 @@ async def handle_ants(reader, writer):
         if host not in known:
             known[host]=1
             print(host+':  '+str(guess))
-        elif known[host] == 1:
-            known[host] = 2
-            ending = random.randint(140, 190)
-            print('192.198.58.'+ str(ending)+':  '+str(guess))
-
     writer.close()
 
 loop = asyncio.get_event_loop()
