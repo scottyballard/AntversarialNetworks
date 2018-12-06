@@ -29,16 +29,15 @@ def test_fp(host, port1, port2):
     src = get_random_test(host, port1, port2)
     res = sr1(src, timeout=2)
     if src.sport == 5008:
-        fingerprint["PU"] = (src, res)
-        fingerprint["number"] = 8
+        fingerprint['PU'] = (src, res)
+        fingerprint['PU'] = nmap_udppacket_sig(*fingerprint['PU'])
+        fingerprint['number'] = 8
     else:
         test = "T%i" % (src.sport - 5000)
         if res is not None and ICMP in res:
             warning("Test %s answered by an ICMP", test)
             res = None
-        fingerprint[test] = res
-        fingerprint["number"] = src.sport - 5000
+        fingerprint['number'] = src.sport - 5000
         fingerprint['host'] = host
+        fingerprint[test] = nmap_tcppacket_sig(res)
     return fingerprint
-
-

@@ -5,7 +5,7 @@ import datetime
 import sys
 import os
 
-HOST = '127.0.0.1'
+HOST = [('192.168.58.138', 22, 80), ('192.168.58.137', 135, 80), ('192.168.58.140', 8000, 80), ('192.168.58.141', 8000, 80), ('192.168.58.132', 8000, 80)]
 PORT = 25252
 
 
@@ -39,27 +39,25 @@ def test_fp(host, port1, port2):
     src = get_random_test(host, port1, port2)
     res = sr1(src, timeout=2)
     if src.sport == 5008:
-        fingerprint["PU"] = (src, res)
-        fingerprint["number"] = 8
+        fingerprint['PU'] = (src, res)
+        fingerprint['PU'] = nmap_udppacket_sig(*fingerprint['PU'])
+        fingerprint['host'] = host
+        fingerprint['number'] = 8
     else:
         test = "T%i" % (src.sport - 5000)
         if res is not None and ICMP in res:
             warning("Test %s answered by an ICMP", test)
             res = None
-        fingerprint[test] = res
-        fingerprint["number"] = src.sport - 5000
+        fingerprint['number'] = src.sport - 5000
         fingerprint['host'] = host
+        fingerprint[test] = nmap_tcppacket_sig(res)
     return fingerprint
 
 
 
-nmapResult = test_fp(HOST, PORT, 80)
-nmapResult = str(nmapResult)
-
-
 async def tcp_echo_client(message, loop):
 
-    reader, writer = await asyncio.open_connection(HOST, PORT, loop=loop)
+    reader, writer = await asyncio.open_connection('192.168.58.129', PORT, loop=loop)
     # while serverResStop <= 5:
     #    nmapResult = test_fp(HOST, PORT, 80)
     #    nmapResult = str(nmapResult)
@@ -68,6 +66,10 @@ async def tcp_echo_client(message, loop):
     data = await reader.read(100)
     writer.close()
 
-loop = asyncio.get_event_loop()
-loop.run_until_complete(tcp_echo_client(nmapResult, loop))
+for i in range (0, 1010):
+    test = HOST[random.randint(0,4)]
+    nmapResult = test_fp(test[0], test[1], test[2])
+    nmapResult = str(nmapResult)
+    loop = asyncio.get_event_loop()
+    loop.run_until_complete(tcp_echo_client(nmapResult, loop))
 loop.close()
