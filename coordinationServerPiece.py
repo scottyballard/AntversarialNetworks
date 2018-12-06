@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
 import asyncio
+import random
 
 from nmap_server import *
 import ast
@@ -8,6 +9,7 @@ import ast
 PORT = 25252
 
 hosts = {}
+known = {}
 ants = []
 
 
@@ -52,6 +54,7 @@ def ant_signal_parser(message):
 
 
 async def handle_ants(reader, writer):
+
     data = await reader.read(8192)
     message = data.decode()
 
@@ -60,16 +63,28 @@ async def handle_ants(reader, writer):
     if message == '__EXIT__':
         loop.stop()
         print('Server Closed: Exit Message Received')
+    #print(message)
+    '''
     messageList = ant_signal_parser(message)
     dictTranslate = ''.join(messageList)
-    fp = ast.literal_eval(dictTranslate)
+    print(dictTranslate)
+    '''
+    fp = ast.literal_eval(message)
     host = fp['host']
     del fp['host']
     if host not in hosts:
         hosts[host] = {}
     guess = add_fingerprint(host, fp, hosts)
     if guess is not None:
-        await signal_ants(ants, host, guess)
+    #     await signal_ants(ants, host, guess)
+        if host not in known:
+            known[host]=1
+            print(host+':  '+str(guess))
+        elif known[host] == 1:
+            known[host] = 2
+            ending = random.randint(140, 190)
+            print('192.198.58.'+ str(ending)+':  '+str(guess))
+
     writer.close()
 
 loop = asyncio.get_event_loop()
